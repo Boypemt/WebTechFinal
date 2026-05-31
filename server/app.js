@@ -5,12 +5,16 @@
 const express = require('express');
 const path    = require('path');
 const cors    = require('cors');
+const helmet  = require('helmet');
 
 const app = express();
 
 // --- Body parser with size limit (Session 10 audit, slide 7) -------
 // Rejects any request body over 10KB to prevent memory-exhaustion attacks.
 app.use(express.json({ limit: '10kb' }));
+
+// Helmet adds X-Frame-Options, X-Content-Type-Options, Strict-Transport-Security, and other security headers.
+app.use(helmet());
 
 // --- CORS whitelist from .env --------------------------------------
 const allowedOrigins = (process.env.CORS_ORIGINS || '')
