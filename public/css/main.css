@@ -656,7 +656,64 @@ img {
 }
 
 
-/* ─── 12. Toast Notification ────────────────────────────────────── */
+/* ─── 12. Commit 2 — Auth & Checkout polish ────────────────────── */
+
+/*
+   Empty cart row — checkout-ui.js เพิ่ม .empty-cart-row เมื่อ cart ว่าง
+   WHY CSS ไม่ใช่ inline style? ให้ Arm แก้ได้โดยไม่ต้องเข้า JS
+*/
+.empty-cart-row td {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: var(--clr-gray-400);
+  font-size: 0.9rem;
+}
+.empty-cart-row td a {
+  color: var(--clr-primary);
+  font-weight: 500;
+}
+
+/*
+   Alert shake — ดึงความสนใจ user ไปที่ error ทันทีที่ปรากฏ
+   WHY ANIMATION แทน static message?
+   Static error user อาจไม่สังเกต โดยเฉพาะถ้า error อยู่นอก viewport
+   Shake ทำให้รู้ทันทีว่ามี feedback ใหม่เกิดขึ้น
+*/
+@keyframes alert-shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-8px); }
+  40%       { transform: translateX(8px); }
+  60%       { transform: translateX(-5px); }
+  80%       { transform: translateX(5px); }
+}
+
+.alert-danger:not([hidden]) {
+  animation: alert-shake 0.4s ease both;
+}
+
+/*
+   Card number input — monospace font ทำให้กลุ่มเลข align ตรงกัน
+   WHY MONOSPACE?
+   Proportional font แต่ละ digit กว้างไม่เท่า — "1111" แคบกว่า "8888"
+   Monospace ทุก digit กว้างเท่ากัน อ่าน 16 หลักง่ายขึ้นมาก
+*/
+#card_number {
+  font-family: var(--font-mono);
+  letter-spacing: 0.12em;
+  font-size: 1rem;
+}
+#card_number:focus {
+  border-color: var(--clr-primary);
+  box-shadow: 0 0 0 3px var(--clr-primary-light);
+  outline: none;
+}
+#card_number[data-masked="true"] {
+  letter-spacing: 0.2em;
+  color: var(--clr-gray-600);
+}
+
+
+/* ─── 13. Toast Notification ────────────────────────────────────── */
 /*
    Toast จะถูกสร้างและ inject โดย catalog.js เมื่อ addToCart()
    สำเร็จ — Farsai แค่ style ให้พร้อม

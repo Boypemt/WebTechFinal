@@ -32,13 +32,13 @@ The dotted red **cut line** shows where the monolith could be split into three i
 
 ## Concurrency — Bonus A — Stock-Check
 
-### The bug as it stands today (Day 5)
+### The bug before Day 7
 
-In `server/services/checkoutService.js`, the capacity check runs as a plain `SELECT` inside `findWorkshopForCheckout` and the result is evaluated on line 14 (`if (workshop.current_bookings + item.quantity > workshop.max_capacity)`). A separate `incrementBookings` call later issues the `UPDATE`. Between those two statements, a second concurrent request can call `findWorkshopForCheckout` and receive the same stale `current_bookings` value — meaning both requests pass the check independently. This is a classic TOCTOU (Time Of Check, Time Of Use) race condition: the world is checked at one moment but acted on at another, and the state can change in between.
+In `server/services/checkoutService.js`, the capacity check ran as a plain `SELECT` inside `findWorkshopForCheckout` and the result was evaluated on line 14 (`if (workshop.current_bookings + item.quantity > workshop.max_capacity)`). A separate `incrementBookings` call later issued the `UPDATE`. Between those two statements, a second concurrent request could call `findWorkshopForCheckout` and receive the same stale `current_bookings` value — meaning both requests passed the check independently. This is a classic TOCTOU (Time Of Check, Time Of Use) race condition: the world was checked at one moment but acted on at another, and the state could change in between.
 
-### The fix on Day 7
+### The fix (implemented Day 7)
 
-We will wrap the per-item loop (steps 3–6 of `placeOrder`) in an explicit transaction:
+We wrap the per-item loop (steps 3–6 of `placeOrder`) in an explicit transaction:
 
 ```js
 await db.runAsync('BEGIN IMMEDIATE TRANSACTION');
@@ -53,6 +53,8 @@ try {
 ```
 
 `BEGIN IMMEDIATE` (not `BEGIN DEFERRED`) acquires a `RESERVED` lock at the moment the transaction opens, so any second request that also tries `BEGIN IMMEDIATE` blocks until the first transaction either commits or rolls back. SQLite serializes the contending writes on our behalf — no application-level mutex needed.
+
+Verified: docs/screenshots/race-bug-day6.png shows the bug; docs/screenshots/race-fix-day7.png shows two concurrent requests resolving to one 201 and one 409, with current_bookings landing at max_capacity and never above it.
 
 ### Why this is the right pattern here
 

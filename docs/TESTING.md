@@ -72,7 +72,7 @@ Base URL: `http://localhost:3000`
 
 ---
 
-## Race Condition Demo (Bonus A preview)
+## Race Condition Demo (Bonus A — implemented Day 7)
 
 1. Stop your dev server. Open `store.db` in SQLite Viewer.
    Edit workshop `id=5` (Thai Curry Night): set `current_bookings = 11`,
@@ -96,6 +96,9 @@ Base URL: `http://localhost:3000`
 
 4. Press Enter in both tabs as close to the same instant as possible.
 
-5. **Expected today (BUGGY):** both tabs return `201`; `store.db` shows
-   `current_bookings = 13` — over `max_capacity = 12`.
-   **Expected after Day 7 fix:** one tab returns `201`, the other returns `409`.
+5. **Expected (with Bonus A in place):** one tab returns `201`, the other
+   returns `409` with body `{ success: false, error: 'Workshop full', workshopId: 5 }`.
+   SQLite shows `current_bookings = 12` — the max_capacity is respected, never exceeded.
+   The original buggy behaviour was captured before the fix in
+   `docs/screenshots/race-bug-day6.png`. The fix is captured in
+   `docs/screenshots/race-fix-day7.png`.
