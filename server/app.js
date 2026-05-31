@@ -9,6 +9,8 @@ const helmet  = require('helmet');
 
 const app = express();
 
+app.use(require('./middleware/requestId'));
+
 // --- Body parser with size limit (Session 10 audit, slide 7) -------
 // Rejects any request body over 10KB to prevent memory-exhaustion attacks.
 app.use(express.json({ limit: '10kb' }));
@@ -54,8 +56,17 @@ app.use((req, res) => {
 // External: generic message to the client (Session 10, slide 5).
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
-  console.error('[ERROR]', err.stack || err);
-  res.status(500).json({ success: false, error: 'Internal server error' });
+  console.error('[ERROR]', {
+    id:     req.id,
+    method: req.method,
+    path:   req.path,
+    stack:  err.stack || String(err),
+  });
+  res.status(500).json({
+    success:   false,
+    error:     'Internal server error',
+    requestId: req.id,   // safe to expose — log correlation only
+  });
 });
 
 module.exports = app;
