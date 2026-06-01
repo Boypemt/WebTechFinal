@@ -7,8 +7,8 @@ A full-stack workshop booking platform built as the final project for **Course 9
 | Role | Member | Owns |
 |------|--------|------|
 | Lead Architect | Boypemt | Schema, transactions, JWT, `.env`, Go-Live Audit, `ARCHITECTURE.md` |
-| Integration Engineer | Arm | API endpoints, `fetch()` logic, 409 handling, JWT state, hydration |
-| UX Engineer | Farsai | Workshop cards, capacity badges, "Book Seat" UX, debouncing, CSS |
+| Integration Engineer | phoo3011 | API endpoints, `fetch()` logic, 409 handling, JWT state, hydration |
+| UX Engineer | _TBD_ | Workshop cards, capacity badges, "Book Seat" UX, debouncing, CSS |
 
 ## The Niche — Skill-Share Workshop
 
@@ -51,6 +51,15 @@ npm run dev                      # nodemon — auto-restarts on change
 
 Open `http://localhost:3000/api/health` — should return `{ "success": true, "status": "ok" }`.
 
+## Verify it works
+
+Run these four checks on a fresh clone to confirm the server and seed data are healthy:
+
+1. `GET http://localhost:3000/api/health` → `{ "success": true, "status": "ok" }`
+2. `GET http://localhost:3000/api/workshops` → `{ "success": true, "count": 12, "data": [...] }`
+3. `POST http://localhost:3000/api/login` body `{ "email": "alice@example.com", "password": "Password123!" }` → `200` with a JWT token
+4. `POST http://localhost:3000/api/checkout` body `{ "items": [{ "id": 3, "quantity": 1 }], "email": "test@x.com", "card": "4242424242424242" }` → `409` with `{ "error": "Workshop full", "workshopId": 3 }` (niche-twist proof)
+
 ## Architectural Best Practices implemented
 
 This project is the audited final form of every pattern taught in Sessions 1-10:
@@ -66,11 +75,36 @@ This project is the audited final form of every pattern taught in Sessions 1-10:
 9. **Controller-Route-Service** separation, with a dedicated Repository layer for SQL
 10. **Zero-Config + .env** — no secrets in source, project boots on any machine
 
+## Visual Proof
+
+![Bonus A — race condition fix](docs/screenshots/race-fix-day7.png)
+Two simultaneous "last-seat" bookings; one 201, one 409.
+
+![Niche twist — sold-out workshop](docs/screenshots/checkout-409.png)
+Capacity check returns 409 with workshopId.
+
+![PCI-DSS card masking](docs/screenshots/sqlite-orders-table.png)
+Only card_last4 is stored; full PAN never persisted.
+
+![Login + JWT](docs/screenshots/login-success.png)
+bcrypt + JWT 24h, payload decoded at jwt.io.
+
+![Brute-force defense](docs/screenshots/rate-limit-429.png)
+/api/login rate-limited to 5 attempts per 15 min per IP.
+
 ## Documentation
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — Why each pattern was chosen
 - [docs/API.md](docs/API.md) — Full endpoint reference
-- [docs/diagrams/](docs/diagrams/) — ERD, Component Diagram, Sequence Diagrams
+- [docs/TESTING.md](docs/TESTING.md) — Manual test plan (all endpoints + race demo)
+- [docs/AUDIT-FINDINGS.md](docs/AUDIT-FINDINGS.md) — Pre-deployment checklist (Day 8 audit)
+- [docs/AUDIT-RED-TEAM.md](docs/AUDIT-RED-TEAM.md) — Red-team findings on checkout flow
+- [docs/diagrams/erd.jpg](docs/diagrams/erd.jpg) — Entity-Relationship Diagram
+- [docs/diagrams/components.jpg](docs/diagrams/components.jpg) — Component Diagram
+
+> **Bonus Challenge A (+3 pts) — Stock-Check Concurrency:**
+> Implemented via `BEGIN IMMEDIATE TRANSACTION` in `server/services/checkoutService.js`.
+> Verified with two-tab race test; see screenshots.
 
 ## License
 
