@@ -792,3 +792,143 @@ img {
     --card-img-height: 180px;
   }
 }
+
+/* ─── Mobile additions (commit 3) ───────────────────────────────── */
+@media (max-width: 575px) {
+
+  /* --- Navbar --- */
+  /*
+     WHY ซ่อน nav-username บน mobile?
+     พื้นที่แคบมาก "Hi, Farsai" + Login + Cart ชนกัน
+     ซ่อน username ให้ปุ่มหลักแสดงครบ
+  */
+  #nav-username {
+    display: none;
+  }
+
+  /* --- Touch targets --- */
+  /*
+     WCAG 2.5.5 กำหนด interactive element ต้องสูงขั้นต่ำ 44px
+     บน desktop 40px ก็พอเพราะใช้ mouse แต่นิ้วมือแตะได้ยาก
+  */
+  .btn-book-seat {
+    padding: 13px 16px;
+    min-height: 44px;
+  }
+
+  .category-tab {
+    padding: 10px 16px;
+    min-height: 44px;
+  }
+
+  /* --- Checkout table --- */
+  /*
+     WHY overflow-x: auto?
+     Table มี 3 คอลัมน์ บนมือถือแคบ 375px จะ overflow viewport
+     ทำให้ scroll แนวนอนได้แทนที่จะ break layout
+  */
+  .table-responsive-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -12px;   /* bleed ออกไปถึงขอบ container */
+    padding: 0 12px;
+  }
+
+  /* ถ้าไม่มี wrapper ให้ table scroll เองตรงๆ */
+  #checkout-form .table {
+    min-width: 420px;
+  }
+
+  /* --- Card number input --- */
+  /*
+     font-size < 16px บน iOS ทำให้ browser zoom เข้ามาอัตโนมัติเมื่อ focus
+     ตั้ง 16px ป้องกัน auto-zoom ที่ทำให้ layout เสีย
+  */
+  #card_number {
+    font-size: 16px;
+    letter-spacing: 0.08em;
+  }
+
+  /* --- Auth forms --- */
+  /* ลด padding form card บน mobile ให้พอดีหน้าจอแคบ */
+  #login-form,
+  #register-form {
+    padding: 20px 16px;
+  }
+
+  /* --- Toast --- */
+  /*
+     Mobile: toast อยู่กลาง bottom แทน bottom-right
+     WHY? bottom-right บน mobile อาจชนกับ iOS home indicator
+     และนิ้วหัวแม่มืออยู่กลาง-ล่าง ดูง่ายกว่า
+  */
+  .toast-cart {
+    right: 50%;
+    transform: translateX(50%) translateY(12px);
+    bottom: 32px;       /* เว้น iOS home indicator */
+    width: calc(100% - 32px);
+    text-align: center;
+  }
+
+  .toast-cart--show {
+    transform: translateX(50%) translateY(0);
+  }
+}
+
+/* ─── Reduced motion (commit 3) ─────────────────────────────────── */
+/*
+   WHY prefers-reduced-motion?
+   ผู้ใช้บางคนมีอาการ vestibular disorder — animation ทำให้เวียนหัว
+   OS มี toggle "Reduce Motion" ที่ส่ง media query นี้มาให้ browser
+   เราต้อง respect มัน — ปิด animation ทุกตัวเมื่อ user ขอ
+
+   ไม่ได้ปิดหมดทุกอย่าง — แค่ animation ที่ "เคลื่อนที่มาก"
+   transition สั้นๆ เช่น color change ยังคงไว้ได้
+*/
+@media (prefers-reduced-motion: reduce) {
+  /* ปิด shimmer ซึ่งเคลื่อนไหวตลอดเวลา */
+  .skeleton {
+    animation: none;
+    background: var(--clr-gray-200);
+  }
+
+  /* ปิด card hover lift */
+  .workshop-card {
+    transition: box-shadow var(--transition-fast);
+  }
+  .workshop-card:hover {
+    transform: none;
+  }
+  .workshop-card:hover .workshop-card__img {
+    transform: none;
+  }
+
+  /* ปิด seats--low pulse */
+  .seats--low {
+    animation: none;
+  }
+
+  /* ปิด toast slide */
+  .toast-cart {
+    transition: opacity var(--transition-fast);
+    transform: none !important;
+  }
+  .toast-cart--show {
+    transform: none !important;
+  }
+
+  /* ปิด alert shake */
+  .alert-danger:not([hidden]) {
+    animation: none;
+  }
+
+  /* ปิด 409 row shake */
+  #summary-items tr.table-danger {
+    animation: none;
+  }
+
+  /* ปิด cart badge bump */
+  #cart-count.bump {
+    transform: none;
+  }
+}

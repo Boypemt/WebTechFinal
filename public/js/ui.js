@@ -129,6 +129,15 @@ export function initCategoryTabs(loadCatalog) {
             t.setAttribute('aria-pressed', isActive ? 'true' : 'false');
         });
 
+        // ── Mobile: scroll selected tab into view ────────────────
+        // WHY scrollIntoView?
+        // บน mobile #category-tabs scroll แนวนอน (overflow-x: auto)
+        // tab ที่เลือกอาจอยู่นอก viewport เช่น กด "Art" ขณะที่ scroll
+        // อยู่ซ้ายสุด — scrollIntoView เลื่อนให้เห็น tab ที่เลือกเสมอ
+        // behavior: 'smooth' ทำให้รู้สึก native ไม่กระตุก
+        // block: 'nearest' ป้องกัน page scroll แนวตั้ง (scroll แค่ tabs)
+        tab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+
         // เรียก Arm's loadCatalog ด้วย category ที่เลือก
         loadCatalog(category);
     });
