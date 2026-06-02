@@ -7,10 +7,9 @@ async function placeOrder({ items, email, card, user_id }) {
     // PCI-DSS — only the last 4 digits ever touch storage.
     const card_last4 = card.slice(-4);
 
-    // BONUS A — Stock-Check Concurrency.
-    // BEGIN IMMEDIATE acquires a RESERVED lock now, so a second concurrent
-    // request blocks here until our COMMIT runs. This closes the TOCTOU
-    // window between the capacity check (SELECT) and the bookings bump (UPDATE).
+    // C-3 fix: BEGIN IMMEDIATE acquires a RESERVED lock now, so a second concurrent
+    // request blocks here until our COMMIT runs, closing the TOCTOU window between
+    // the capacity check (SELECT) and the bookings bump (UPDATE).
     await db.runAsync('BEGIN IMMEDIATE TRANSACTION');
     try {
         const builtItems = [];
