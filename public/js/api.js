@@ -11,7 +11,7 @@
 // Exported functions cover every endpoint the frontend needs.
 // ===================================================================
 
-const BASE_URL = '/api';
+const BASE_URL = 'http://localhost:3000/api';
 
 // ── Core helper ─────────────────────────────────────────────────────
 
@@ -109,9 +109,10 @@ export function postLogin({ email, password }) {
  *
  * @typedef {{ workshop_id: number, quantity: number, unit_price: number }} CheckoutItem
  */
-export function postCheckout({ email, card_last4, items }) {
+// C-1 fix: renamed card_last4 → card to match checkoutController's expected field name
+export function postCheckout({ email, card, items }) {
     return request('/checkout', {
         method: 'POST',
-        body:   JSON.stringify({ email, card_last4, items }),
+        body:   JSON.stringify({ email, card, items }),
     });
 }

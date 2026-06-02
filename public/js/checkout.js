@@ -82,10 +82,9 @@ async function handleCheckoutSubmit(e) {
         return;
     }
 
-    // Read card number and extract the last 4 digits
-    const rawCard    = (form.card_number?.value || '').replace(/\D/g, '');
-    const card_last4 = rawCard.slice(-4);
-    if (!/^\d{4}$/.test(card_last4)) {
+    // C-1 fix: server expects full 16-digit card string, not last-4 only
+    const rawCard = (form.card_number?.value || '').replace(/\D/g, '');
+    if (!/^\d{16}$/.test(rawCard)) {
         showError(errorEl, 'Please enter a valid card number.');
         return;
     }
@@ -96,11 +95,10 @@ async function handleCheckoutSubmit(e) {
         return;
     }
 
+    // C-2 fix: server validates entry.id (not entry.workshop_id); unit_price is server-side only
     const items = cart.map((item) => ({
-        workshop_id: item.id,
-        quantity:    item.quantity,
-        // unit_price is informational; the server always uses its own price (Gatekeeper).
-        unit_price:  item.price,
+        id:       item.id,
+        quantity: item.quantity,
     }));
 
     // Disable to prevent double-submit
@@ -108,7 +106,7 @@ async function handleCheckoutSubmit(e) {
     submitBtn.textContent = 'Processing…';
 
     try {
-        const result = await postCheckout({ email, card_last4, items });
+        const result = await postCheckout({ email, card: rawCard, items });
 
         // ── 201 Created ──────────────────────────────────────────────
         clearCart();
