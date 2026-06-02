@@ -141,6 +141,47 @@ export function initCategoryTabs(loadCatalog) {
         // เรียก Arm's loadCatalog ด้วย category ที่เลือก
         loadCatalog(category);
     });
+
+    // ── Keyboard arrow navigation ────────────────────────────────
+    /*
+       WHY ARROW KEY NAV?
+       WCAG 4.1.2 กำหนดว่า widget ที่มีหลาย option ควรใช้ arrow keys
+       ตาม "roving tabindex" pattern:
+         → หรือ ↓ : ไป tab ถัดไป
+         ← หรือ ↑ : ไป tab ก่อนหน้า
+         Home      : ไป tab แรก
+         End       : ไป tab สุดท้าย
+
+       WHY keydown ไม่ใช่ keyup?
+       keydown fires ซ้ำๆ เมื่อ hold key — ทำให้ navigation ลื่น
+       keyup fires ครั้งเดียวตอนปล่อย — รู้สึก laggy
+    */
+    container.addEventListener('keydown', (e) => {
+        const tabs = [...container.querySelectorAll('.category-tab')];
+        const current = document.activeElement;
+        const idx = tabs.indexOf(current);
+        if (idx === -1) return; // focus ไม่ได้อยู่บน tab
+
+        let next = -1;
+
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+            // วนกลับมาอันแรกถ้าถึงอันสุดท้าย
+            next = (idx + 1) % tabs.length;
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            // วนไปอันสุดท้ายถ้าอยู่อันแรก
+            next = (idx - 1 + tabs.length) % tabs.length;
+        } else if (e.key === 'Home') {
+            next = 0;
+        } else if (e.key === 'End') {
+            next = tabs.length - 1;
+        } else {
+            return; // key อื่นไม่ต้อง handle
+        }
+
+        e.preventDefault(); // ป้องกัน page scroll เมื่อกด Arrow/Home/End
+        tabs[next].focus();
+        tabs[next].click(); // trigger click handler ที่มีอยู่แล้ว
+    });
 }
 
 

@@ -932,3 +932,104 @@ img {
     transform: none;
   }
 }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   commit 4 — Accessibility & focus
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Skip link ─────────────────────────────────────────────────── */
+/*
+   WHY SKIP LINK?
+   Keyboard/screen reader user ต้องกด Tab ผ่าน navbar ทุกครั้งก่อนถึง content
+   skip link ให้กด Tab ครั้งแรกแล้วกด Enter ข้ามไป #catalog ได้เลย
+   ซ่อนไว้ด้วย transform แทน display:none เพราะ display:none
+   ทำให้ element ถูกเอาออกจาก accessibility tree ด้วย
+*/
+.skip-link {
+  position: fixed;
+  top: -100%;
+  left: 16px;
+  z-index: 10000;
+  background: var(--clr-primary);
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: top var(--transition-fast);
+}
+
+/* โผล่ขึ้นมาเมื่อ keyboard focus */
+.skip-link:focus {
+  top: 0;
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+}
+
+
+/* ─── Focus visible ─────────────────────────────────────────────── */
+/*
+   WHY :focus-visible แทน :focus?
+   :focus fires ทุกครั้งที่ click ด้วย — ทำให้ปุ่มมี ring แม้ mouse click
+   :focus-visible fires เฉพาะเมื่อ keyboard navigation
+   ผล: mouse user ไม่เห็น ring (UX สะอาด)
+       keyboard user เห็น ring ทุกครั้ง (Accessibility ครบ)
+*/
+
+/* Global focus-visible สำหรับทุก interactive element */
+*:focus-visible {
+  outline: 3px solid var(--clr-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Override สำหรับ element ที่มี custom focus style อยู่แล้ว */
+#search-input:focus-visible {
+  outline: none; /* ใช้ box-shadow แทน (มีอยู่แล้วใน section 4) */
+}
+
+#card_number:focus-visible {
+  outline: none; /* ใช้ box-shadow แทน (มีอยู่แล้วใน section 12) */
+}
+
+.btn-book-seat:focus-visible {
+  outline: 3px solid var(--clr-primary);
+  outline-offset: 3px;
+}
+
+.category-tab:focus-visible {
+  outline: 3px solid var(--clr-primary);
+  outline-offset: 2px;
+}
+
+
+/* ─── Keyboard nav — category tabs ─────────────────────────────── */
+/*
+   JS จัดการ arrow key navigation (ใน ui.js)
+   CSS รับผิดชอบแค่ visual focus ring ที่ชัดเจน
+   ให้รู้ว่า focus อยู่ที่ tab ไหนตอน Tab/Arrow key
+*/
+.category-tab:focus {
+  position: relative;
+  z-index: 1; /* ป้องกัน focus ring ถูก clip จาก container */
+}
+
+
+/* ─── High contrast adjustments ─────────────────────────────────── */
+/*
+   .seats--low amber สีอ่อนบน amber background อาจไม่ผ่าน WCAG AA (4.5:1)
+   เพิ่ม border เพื่อช่วย distinguish โดยไม่ต้องเปลี่ยนสี
+*/
+.seats--low {
+  border: 1px solid var(--clr-warning);
+}
+
+.seats--open {
+  border: 1px solid var(--clr-seats-open-text);
+}
+
+.seats--full {
+  border: 1px solid var(--clr-seats-full-text);
+}

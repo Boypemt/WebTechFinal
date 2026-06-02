@@ -149,6 +149,13 @@ export async function loadCatalog(category, query) {
     if (skeletonEl) skeletonEl.hidden = false;
     if (catalogEl)  catalogEl.innerHTML = '';
     if (errorEl)    errorEl.hidden = true;
+
+    // aria-busy: true → screen reader รู้ว่ากำลังโหลด ไม่ announce content เก่า
+    // WHY setAttribute ไม่ใช่ property?
+    // aria-busy เป็น ARIA attribute ต้องใช้ setAttribute เพื่อให้ browser
+    // ส่งต่อไปยัง accessibility tree ถูกต้อง
+    if (skeletonEl) skeletonEl.setAttribute('aria-busy', 'true');
+    if (catalogEl)  catalogEl.setAttribute('aria-busy', 'true');
  
     try {
         const { data } = await getWorkshops(category);
@@ -177,6 +184,10 @@ export async function loadCatalog(category, query) {
         }
     } finally {
         if (skeletonEl) skeletonEl.hidden = true;
+
+         // aria-busy: false → screen reader announce content ใหม่ได้แล้ว
+        if (skeletonEl) skeletonEl.setAttribute('aria-busy', 'false');
+        if (catalogEl)  catalogEl.setAttribute('aria-busy', 'false');
     }
 }
  
@@ -228,6 +239,20 @@ window.addEventListener('cart:change', ({ detail }) => {
  
 
 // ── Boot ─────────────────────────────────────────────────────────────
+//   1. initAuthUI()             — ต้องก่อนเพื่อให้ navbar แสดง login state
+//   2. initCategoryTabs(...)    — render ปุ่ม category + wire click
+//   3. initSearchDebounce(...)  — wire search input + debounce
+//   4. loadCatalog()            — load workshop ครั้งแรก (ไม่ filter)
+//
+// WHY ส่ง loadCatalog เข้า initCategoryTabs และ initSearchDebounce?
+// เพื่อหลีกเลี่ยง circular import:
+//   ถ้า ui.js import loadCatalog จาก catalog.js
+//   และ catalog.js import initCategoryTabs จาก ui.js
+//   → circular dependency → module bundler อาจ error
+// แทนที่จะ import cross กัน เราใช้ dependency injection:
+//   catalog.js ส่ง loadCatalog ให้ ui.js เป็น parameter
+//   ui.js ไม่ต้อง import อะไรจาก catalog.js เลย
+
 initAuthUI();
 initCategoryTabs(loadCatalog);
 initSearchDebounce(loadCatalog);
