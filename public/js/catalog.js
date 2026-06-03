@@ -19,6 +19,8 @@ import {
     bumpCartBadge,
 } from './ui.js';
 
+const KNOWN_CATEGORIES = ['tech', 'cooking', 'music', 'art'];
+
 // ── DOM refs ─────────────────────────────────────────────────────────
 const catalogEl   = document.getElementById('catalog');
 const skeletonEl  = document.getElementById('catalog-skeleton');
@@ -167,11 +169,16 @@ export async function loadCatalog(category, query) {
         // ระหว่างที่ยังไม่มี search endpoint เราทำ filter บน data ที่ได้มา
         // ข้อเสีย: ถ้า category มี 1000 workshops จะ fetch ทั้งหมดมาก่อน
         // แต่สำหรับ project ขนาดนี้ (seed 12 workshops) ไม่เป็นปัญหา
-        const filtered = query
+        const normalizedQuery = query ? query.toLowerCase() : '';
+        const isCategoryQuery = KNOWN_CATEGORIES.includes(normalizedQuery);
+        const filtered = normalizedQuery
             ? data.filter((w) =>
-                w.title.toLowerCase().includes(query.toLowerCase()) ||
-                w.instructor.toLowerCase().includes(query.toLowerCase()) ||
-                (w.description || '').toLowerCase().includes(query.toLowerCase())
+                isCategoryQuery
+                    ? w.category.toLowerCase() === normalizedQuery
+                    : w.title.toLowerCase().includes(normalizedQuery) ||
+                      w.instructor.toLowerCase().includes(normalizedQuery) ||
+                      w.category.toLowerCase().includes(normalizedQuery) ||
+                      (w.description || '').toLowerCase().includes(normalizedQuery)
             )
             : data;
  
