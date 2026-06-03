@@ -89,8 +89,9 @@ async function handleCheckoutSubmit(e) {
         return;
     }
 
-    // C-1 fix: server expects full 16-digit card string, not last-4 only
-    const rawCard = (form.card_number?.value || '').replace(/\D/g, '');
+    // C-1 fix: read the unmasked value preserved by checkout-ui.js when the field blurs.
+    const cardInput = form.card_number;
+    const rawCard = (cardInput?.dataset.realValue || cardInput?.value || '').replace(/\D/g, '');
     if (!/^\d{16}$/.test(rawCard)) {
         showError(errorEl, 'Please enter a valid card number.');
         return;
