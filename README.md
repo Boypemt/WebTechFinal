@@ -8,7 +8,7 @@ A full-stack workshop booking platform built as the final project for **Course 9
 |------|--------|------|
 | Lead Architect | Boypemt | Schema, transactions, JWT, `.env`, Go-Live Audit, `ARCHITECTURE.md` |
 | Integration Engineer | phoo3011 | API endpoints, `fetch()` logic, 409 handling, JWT state, hydration |
-| UX Engineer | _TBD_ | Workshop cards, capacity badges, "Book Seat" UX, debouncing, CSS |
+| UX Engineer | farpinta | Workshop cards, capacity badges, "Book Seat" UX, debouncing, CSS |
 
 ## The Niche — Skill-Share Workshop
 
@@ -82,8 +82,6 @@ This project is the audited final form of every pattern taught in Sessions 1-10:
 - [docs/TESTING.md](docs/TESTING.md) — Manual test plan (all endpoints + race demo)
 - [docs/AUDIT-FINDINGS.md](docs/AUDIT-FINDINGS.md) — Pre-deployment checklist (Day 8 audit)
 - [docs/AUDIT-RED-TEAM.md](docs/AUDIT-RED-TEAM.md) — Red-team findings on checkout flow
-- [docs/diagrams/erd.jpg](docs/diagrams/erd.jpg) — Entity-Relationship Diagram
-- [docs/diagrams/components.jpg](docs/diagrams/components.jpg) — Component Diagram
 
 > **Bonus Challenge A (+3 pts) — Stock-Check Concurrency:**
 > Implemented via `BEGIN IMMEDIATE TRANSACTION` in `server/services/checkoutService.js`.

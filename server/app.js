@@ -16,7 +16,20 @@ app.use(require('./middleware/requestId'));
 app.use(express.json({ limit: '10kb' }));
 
 // Helmet adds X-Frame-Options, X-Content-Type-Options, Strict-Transport-Security, and other security headers.
-app.use(helmet());
+// Configure helmet with a CSP that allows images from remote HTTPS origins
+// and data: URIs so seeded workshop images (external URLs) can be displayed.
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      imgSrc: ["'self'", 'data:', 'https:'],
+      scriptSrc: ["'self'", 'https:'],
+      styleSrc: ["'self'", 'https:', "'unsafe-inline'"],
+      connectSrc: ["'self'", 'https:'],
+      fontSrc: ["'self'", 'https:', 'data:'],
+    },
+  },
+}));
 
 // --- CORS whitelist from .env --------------------------------------
 const allowedOrigins = (process.env.CORS_ORIGINS || '')

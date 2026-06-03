@@ -19,6 +19,8 @@ import {
     bumpCartBadge,
 } from './ui.js';
 
+const KNOWN_CATEGORIES = ['tech', 'cooking', 'music', 'art'];
+
 // ── DOM refs ─────────────────────────────────────────────────────────
 const catalogEl   = document.getElementById('catalog');
 const skeletonEl  = document.getElementById('catalog-skeleton');
@@ -149,6 +151,13 @@ export async function loadCatalog(category, query) {
     if (skeletonEl) skeletonEl.hidden = false;
     if (catalogEl)  catalogEl.innerHTML = '';
     if (errorEl)    errorEl.hidden = true;
+
+    // aria-busy: true → screen reader รู้ว่ากำลังโหลด ไม่ announce content เก่า
+    // WHY setAttribute ไม่ใช่ property?
+    // aria-busy เป็น ARIA attribute ต้องใช้ setAttribute เพื่อให้ browser
+    // ส่งต่อไปยัง accessibility tree ถูกต้อง
+    if (skeletonEl) skeletonEl.setAttribute('aria-busy', 'true');
+    if (catalogEl)  catalogEl.setAttribute('aria-busy', 'true');
  
     try {
         const { data } = await getWorkshops(category);
@@ -160,11 +169,16 @@ export async function loadCatalog(category, query) {
         // ระหว่างที่ยังไม่มี search endpoint เราทำ filter บน data ที่ได้มา
         // ข้อเสีย: ถ้า category มี 1000 workshops จะ fetch ทั้งหมดมาก่อน
         // แต่สำหรับ project ขนาดนี้ (seed 12 workshops) ไม่เป็นปัญหา
-        const filtered = query
+        const normalizedQuery = query ? query.toLowerCase() : '';
+        const isCategoryQuery = KNOWN_CATEGORIES.includes(normalizedQuery);
+        const filtered = normalizedQuery
             ? data.filter((w) =>
-                w.title.toLowerCase().includes(query.toLowerCase()) ||
-                w.instructor.toLowerCase().includes(query.toLowerCase()) ||
-                (w.description || '').toLowerCase().includes(query.toLowerCase())
+                isCategoryQuery
+                    ? w.category.toLowerCase() === normalizedQuery
+                    : w.title.toLowerCase().includes(normalizedQuery) ||
+                      w.instructor.toLowerCase().includes(normalizedQuery) ||
+                      w.category.toLowerCase().includes(normalizedQuery) ||
+                      (w.description || '').toLowerCase().includes(normalizedQuery)
             )
             : data;
  
@@ -177,6 +191,10 @@ export async function loadCatalog(category, query) {
         }
     } finally {
         if (skeletonEl) skeletonEl.hidden = true;
+
+         // aria-busy: false → screen reader announce content ใหม่ได้แล้ว
+        if (skeletonEl) skeletonEl.setAttribute('aria-busy', 'false');
+        if (catalogEl)  catalogEl.setAttribute('aria-busy', 'false');
     }
 }
  
@@ -228,6 +246,20 @@ window.addEventListener('cart:change', ({ detail }) => {
  
 
 // ── Boot ─────────────────────────────────────────────────────────────
+//   1. initAuthUI()             — ต้องก่อนเพื่อให้ navbar แสดง login state
+//   2. initCategoryTabs(...)    — render ปุ่ม category + wire click
+//   3. initSearchDebounce(...)  — wire search input + debounce
+//   4. loadCatalog()            — load workshop ครั้งแรก (ไม่ filter)
+//
+// WHY ส่ง loadCatalog เข้า initCategoryTabs และ initSearchDebounce?
+// เพื่อหลีกเลี่ยง circular import:
+//   ถ้า ui.js import loadCatalog จาก catalog.js
+//   และ catalog.js import initCategoryTabs จาก ui.js
+//   → circular dependency → module bundler อาจ error
+// แทนที่จะ import cross กัน เราใช้ dependency injection:
+//   catalog.js ส่ง loadCatalog ให้ ui.js เป็น parameter
+//   ui.js ไม่ต้อง import อะไรจาก catalog.js เลย
+
 initAuthUI();
 initCategoryTabs(loadCatalog);
 initSearchDebounce(loadCatalog);
