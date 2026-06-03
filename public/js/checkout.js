@@ -17,7 +17,7 @@
 // ===================================================================
 import { postCheckout }                       from './api.js';
 import { isLoggedIn, getUser, initAuthUI }    from './auth.js';
-import { getCart, clearCart }                 from './cart.js';
+import { getCart, clearCart, removeFromCart } from './cart.js';
 
 // ── Hydrate the order summary from the cart ──────────────────────────
 
@@ -30,7 +30,7 @@ function hydrateSummary() {
     if (cart.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="3" class="text-center text-muted py-3">
+                        <td colspan="4" class="text-center text-muted py-3">
               Your cart is empty.
               <a href="/index.html">Browse workshops →</a>
             </td>
@@ -48,6 +48,13 @@ function hydrateSummary() {
               <td>${item.title}</td>
               <td class="text-center">${item.quantity}</td>
               <td class="text-end">฿${lineTotal.toLocaleString()}</td>
+                            <td class="text-center">
+                                <button type="button"
+                                                class="btn btn-sm btn-outline-danger remove-cart-item"
+                                                data-workshop-id="${item.id}">
+                                    Remove
+                                </button>
+                            </td>
             </tr>`;
         })
         .join('');
@@ -166,6 +173,15 @@ function clearRowHighlights() {
     document.querySelectorAll('#summary-items tr.table-danger')
         .forEach((row) => row.classList.remove('table-danger'));
 }
+
+document.getElementById('summary-items')?.addEventListener('click', (e) => {
+    const button = e.target.closest('.remove-cart-item');
+    if (!button) return;
+
+    removeFromCart(Number(button.dataset.workshopId));
+    clearRowHighlights();
+    hydrateSummary();
+});
 
 // ── Boot ─────────────────────────────────────────────────────────────
 // requireAuth: true → redirects to /login.html when no valid token exists.
