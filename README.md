@@ -75,23 +75,6 @@ This project is the audited final form of every pattern taught in Sessions 1-10:
 9. **Controller-Route-Service** separation, with a dedicated Repository layer for SQL
 10. **Zero-Config + .env** — no secrets in source, project boots on any machine
 
-## Visual Proof
-
-![Bonus A — race condition fix](docs/screenshots/race-fix-day7.png)
-Two simultaneous "last-seat" bookings; one 201, one 409.
-
-![Niche twist — sold-out workshop](docs/screenshots/checkout-409.png)
-Capacity check returns 409 with workshopId.
-
-![PCI-DSS card masking](docs/screenshots/sqlite-orders-table.png)
-Only card_last4 is stored; full PAN never persisted.
-
-![Login + JWT](docs/screenshots/login-success.png)
-bcrypt + JWT 24h, payload decoded at jwt.io.
-
-![Brute-force defense](docs/screenshots/rate-limit-429.png)
-/api/login rate-limited to 5 attempts per 15 min per IP.
-
 ## Documentation
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — Why each pattern was chosen
